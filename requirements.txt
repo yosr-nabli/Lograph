@@ -1,0 +1,4 @@
+torch==2.4.0
+numpy==2.0.1
+tqdm
+scikit-learn==1.6.0

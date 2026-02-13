@@ -1,0 +1,13 @@
+name: masterthesis
+channels:
+  - pytorch
+  - conda-forge
+dependencies:
+  - python=3.12
+  - pytorch=2.7.0
+  - torchvision=0.22.0
+  - torchaudio=2.7.0
+  - numpy=2.3.5
+  - scikit-learn=1.7.2
+  - tqdm=4.67.1
+  - pip
