@@ -9,14 +9,14 @@ from data_preprocess import load_dataset
 HOUR = 3600 # seconds
 
 class LogEntityGraph(object):
-	FORMAT_SPACE = re.compile(r'\s+')
+	FORMAT_SPACE = re.compile(r'\s+') #(multiple) spaces, new lines
 	MAX_TIME_INTERVAL = int(config.max_time_interval*HOUR)
 	THRESHOLD_TOKEN_COMPLEXITY = 2
 	THRESHOLD_RECURRENCE_FREQUENCY = 2
 	MIN_TOKEN_LENGTH = 2
 	CASE_SENSITIVE = False
 	ENTITY_FILTER = [
-		re.compile(r'^\d+-\d+-\d+-\d+\.\d+\.\d+\.\d+$'), # (correlation / equivalent to timestamp)
+		re.compile(r'^\d+-\d+-\d+-\d+\.\d+\.\d+\.\d+$'), # (correlation / equivalent to timestamp), 4 groups seperated by hyphens and dots: timestamp bgl: 1117838570-2005-06-03-15.42.50.675872
 	]
 
 	def __init__(self, log_name="bgl", alias=""):
@@ -55,23 +55,23 @@ class LogEntityGraph(object):
 		entity_set = set()
 		if self.enable_temporal_link:
 			entity_set.add("")
-		all_tokens = re.split(self.FORMAT_SPACE, log)
+		all_tokens = re.split(self.FORMAT_SPACE, log) #split log into tokens(by spaces, new lines)
 		for token in all_tokens:
 			if len(token) < self.MIN_TOKEN_LENGTH:
 				continue
-			if token[-1].isalnum()==False: # remove the last punctuation
+			if token[-1].isalnum()==False: # remove the last punctuation, if it is not alphanumeric
 				token = token[:-1]
 			drop_entity = False
 			for e in self.ENTITY_FILTER:
-				if re.match(e, token):
+				if re.match(e, token): #check if token matches any of the entity filters: timestamp
 					drop_entity = True
 					break
 			if drop_entity==True:
 				continue
 			token_complexity = self.calc_token_complexity(token)
-			if token_complexity >= self.THRESHOLD_TOKEN_COMPLEXITY:
+			if token_complexity >= self.THRESHOLD_TOKEN_COMPLEXITY: # here tokens for logs like error, get dropped and only entites get added because they would have numers and chars, chars and special chars etc.. so complex >= 2
 				entity_set.add(token)
-		return entity_set
+		return entity_set #Return a set of distinct entities for this log.
 
 	def add_edge(self, idx, prev_idx, ent_idx):
 		if idx not in self.neighbor:
@@ -80,23 +80,23 @@ class LogEntityGraph(object):
 		return
 
 	def build(self, log_data):
-		self.init_neighbor_map()
-		self.previous_entity = {}
-		self.tempo_map = {}
-		for idx, line in tqdm(enumerate(log_data)):
+		self.init_neighbor_map() # neighbor = {}, entity_index_map = {}
+		self.previous_entity = {} # entity_id -> last log index where it appeared
+		self.tempo_map = {} # log_idx -> timestamp
+		for idx, line in tqdm(enumerate(log_data)): #for each log index
 			log, _, timestamp, _ = line
 			self.tempo_map[idx] = timestamp
-			entity_set = self.extract_entities(log)
+			entity_set = self.extract_entities(log) #get all entities for this log
 			for entity in entity_set:
 				if entity in self.entity_index_map:
 					eid = self.entity_index_map.get(entity)
-					prev_idx = self.previous_entity.get(eid, -1)
+					prev_idx = self.previous_entity.get(eid, -1) #if not in previous_entity, set to -1
 					if 0 <= self.tempo_map[idx] - self.tempo_map[prev_idx] <= self.MAX_TIME_INTERVAL:
-						self.add_edge(idx, prev_idx, eid)
+						self.add_edge(idx, prev_idx, eid) #add edge between current log and previous log where this entity occurred.
 				else:
 					eid = len(self.entity_index_map)
 					self.entity_index_map[entity] = eid
-				self.previous_entity[eid] = idx
+				self.previous_entity[eid] = idx #prev_idx = last log index where this entity occurred.
 		self.gen_statistics()
 		return self
 

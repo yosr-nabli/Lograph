@@ -19,7 +19,7 @@ class LogEntityLogAggregationLayer(nn.Module):
 	def forward(self, log_repr, log_adj_matrices):
 		log_repr = self.graph_atten_layer.forward(log_repr, log_adj_matrices)
 		output, _ = self.seq_model(log_repr)
-		att_log_reprs = output[:, -1, :]
+		att_log_reprs = output[:, -1, :] #inal hidden state at the last position in the window, log-path representation” of the whole window.
 		return att_log_reprs
 
 class LogEntityLogTransformerLayer(nn.Module):
@@ -61,6 +61,10 @@ class EntityLogEntityAggregationLayer(nn.Module):
 		all_attenion_score = []
 		attention_entity_reprs = torch.FloatTensor(len(entity_reprs), self.bidrection_coef*self.hidden_size).fill_(0)
 		for i, (ent_repr, agg_ent_repr) in enumerate(zip(entity_reprs, agg_entity_reprs)):
+			#If a sample has zero entities, we:
+#Append an empty list of attention scores.
+#Leave that row in attention_entity_reprs as zeros.
+#Skip to the next sample.
 			if ent_repr.shape[0]==0:
 				all_attenion_score.append([])
 				continue
@@ -119,10 +123,10 @@ class LographEmbeddingLayer(nn.Module):
 		l2e_map, e2l_map, entity_tmpl_map = self.log_entity_graph.fetch_subgraph(indice)
 		log2id = {x:i for i,x in enumerate(indice)}
 		seq_len = len(indice)
-		adjacency_matrix = np.eye(seq_len)
+		adjacency_matrix = np.eye(seq_len) #identity matrix: each log connected to itself
 		for i, u in enumerate(indice):
-			for e in l2e_map[u]:
-				for v in e2l_map[e]:
+			for e in l2e_map[u]: # entities of log u
+				for v in e2l_map[e]: # logs connected to entity e
 					j = log2id[v]
 					adjacency_matrix[i, j] += 1
 		return adjacency_matrix
@@ -159,10 +163,11 @@ class Lograph(PyTorchModule):
 	def __init__(self, log_entity_graph=None, embed_layer=None, template_cache=None, hidden_size=100, atten_size=16,
 							num_layers=2, bidrectional=True, use_meta_path=[True,True], alias=""):
 		super(Lograph, self).__init__()
+		#number of neurons 128
 		self.hidden_size = hidden_size
 		self.num_layers = num_layers
 		self.bidrection_coef = 2 if bidrectional==True else 1
-		self.embedding_dim = embed_layer.embedding_dim
+		self.embedding_dim = embed_layer.embedding_dim #dim 300
 		self.lograph_embed_layer = LographEmbeddingLayer(log_entity_graph, embed_layer, template_cache, use_meta_path)
 		LogLayerModel = LogEntityLogTransformerLayer if config.use_transformer==True else LogEntityLogAggregationLayer
 		self.log_entity_log_layer = LogLayerModel(self.embedding_dim, hidden_size, num_layers, atten_size,

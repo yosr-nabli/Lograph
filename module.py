@@ -96,18 +96,19 @@ class WordAggregateLayer(nn.Module):
 class WordAggregateTfIdfLayer(nn.Module):
 	def __init__(self, vocab, dimension = 2):
 		super(WordAggregateTfIdfLayer, self).__init__()
-		self.embed_layer = EmbeddingLayer(vocab)
-		self.embedding_dim = vocab.word_dim
+		self.embed_layer = EmbeddingLayer(vocab) # GloVe lookup
+		self.embedding_dim = vocab.word_dim# e.g., 300
 		self.dimension = dimension
-		self.idf_counter = {}
-		self.total_count = 0
-		self.oov_idf_value = 0
+		self.idf_counter = {}  #IDF values per word
+		self.total_count = 0 # total number of logs
+		self.oov_idf_value = 0 # IDF for unknown words
 
 	def set_dimension(self, dim=2):
 		self.dimension = dim
 		return self
 
 	def feed(self, data_loader):
+		#Called once before training to compute IDF statistics:
 		self.idf_counter = {}
 		self.total_count = 0
 		# print("Running TF-IDF algorithm...")
@@ -131,6 +132,7 @@ class WordAggregateTfIdfLayer(nn.Module):
 		return self
 
 	def calc_idf_matrix(self, words, masks):
+		#It looks up IDF from self.idf_counter (already computed in feed())
 		batch_size, seq_len, num_word = words.shape
 		word_list = words.detach().numpy().tolist()
 		mask_list = masks.detach().numpy().tolist()
@@ -181,8 +183,8 @@ class GraphAttentionLayer(nn.Module):
 		self.embedding_dim = embedding_dim
 		self.Wq = Parameter(torch.FloatTensor(embedding_dim, atten_size))
 		self.Wk = Parameter(torch.FloatTensor(embedding_dim, atten_size))
-		self.Wq.data.normal_(mean = 0, std = 0.01)
-		self.Wk.data.normal_(mean = 0, std = 0.01)
+		self.Wq.data.normal_(mean = 0, std = 0.01) #Initialize both matrices with small Gaussian noise (mean 0, std 0.01).
+		self.Wk.data.normal_(mean = 0, std = 0.01) #Small random init helps training converge and avoids symmetry.
 
 	def forward(self, node_reprs, adjacency_matrices, return_list=False):
 		if return_list==True: agg_node_reprs = []

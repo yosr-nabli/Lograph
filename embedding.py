@@ -56,7 +56,7 @@ class Vocab():
 		if config.use_normalization==True:
 			avg_dim_std = 0
 			for k in range(self._embed_dim):
-				dim_std = np.std(self.embeddings[:, k])
+				dim_std = np.std(self.embeddings[:, k]) #take column k each time and do std
 				avg_dim_std += dim_std
 			avg_dim_std = max(avg_dim_std/self._embed_dim, 1e-8)
 			self.embeddings /= avg_dim_std

@@ -12,11 +12,11 @@ class LographDataset(Dataset):
 	def process(self, samples, smpl_index, tmpl_list, template_map):
 		for idx in smpl_index:
 			indice = samples[idx][0]
-			word = [template_map[tmpl_list[j]] for j in samples[idx][0]]
+			word = [template_map[tmpl_list[j]] for j in samples[idx][0]] #list of word IDs for that template.
 			label = samples[idx][1]
 			group = samples[idx][2]
 			if group not in self.group_map:
-				self.group_map[group] = len(self.group_map)
+				self.group_map[group] = len(self.group_map) #Map group string to integer
 			group_id = self.group_map[group]
 			self.dataset.append([word, label, group_id, indice])
 		return self
@@ -33,18 +33,18 @@ class LographDataset(Dataset):
 
 def lograph_collate_fn(batch):
 	batch_size = len(batch)
-	words = [x[0] for x in batch]
-	labels = [x[1] for x in batch]
-	groups = [x[2] for x in batch]
-	lengths = [len(x[0]) for x in batch]
-	word_counts = [[len(v) for v in x[0]] for x in batch]
-	max_length = max(lengths)
-	max_word_count = max([max(x) for x in word_counts])
-	indices = [(x[3]+[-1]*max_length)[:max_length] for x in batch]
+	words = [x[0] for x in batch]# list of words
+	labels = [x[1] for x in batch] # list of labels
+	groups = [x[2] for x in batch]# list of group_ids
+	lengths = [len(x[0]) for x in batch] # sequence length per sample
+	word_counts = [[len(v) for v in x[0]] for x in batch] # number of words per sample
+	max_length = max(lengths) # longest sequence length in a bash
+	max_word_count = max([max(x) for x in word_counts]) # longest word list in batch
+	indices = [(x[3]+[-1]*max_length)[:max_length] for x in batch] # indices of words in the sequence
 	word_tensor = torch.LongTensor(batch_size, max_length, max_word_count).fill_(0)
 	group_tensor = torch.LongTensor(batch_size).fill_(0)
 	label_tensor = torch.LongTensor(batch_size).fill_(0)
-	mask_tensor = torch.ByteTensor(batch_size, max_length, max_word_count).fill_(0)
+	mask_tensor = torch.ByteTensor(batch_size, max_length, max_word_count).fill_(0) # 1 where words exisst 0 where not
 	for i, (word,label,group) in enumerate(zip(words, labels, groups)):
 		for j,num in enumerate(word_counts[i]):
 			word_tensor[i, j, :num] = torch.LongTensor(word[j])

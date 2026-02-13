@@ -88,14 +88,26 @@ def train_test_split_grouped(samples, sample_ratio=0.1):
 	N = len(all_groups)
 	train_size = int(N*config.train_prop)
 	train_and_dev_size = int(N*(1-config.test_prop))
-	test_groups = all_groups[train_and_dev_size:]
-	train_dev_groups = all_groups[:train_and_dev_size]
+	test_groups = all_groups[train_and_dev_size:] #last 20% of groups
+	train_dev_groups = all_groups[:train_and_dev_size] # first 80% of groups
 	np.random.shuffle(train_dev_groups)
-	train_groups = train_dev_groups[:train_size]
+	train_groups = train_dev_groups[:train_size] #first 70% of groups
 	dev_groups = train_dev_groups[train_size:train_and_dev_size]
+	#N = 100
+	#train_size = 70
+	#train_and_dev_size = 90
+	#test_groups = all_groups[90:] → groups 90-99 (10 groups)
+	#train_dev_groups = all_groups[:90] → groups 0-89 (90 groups)
+	#Shuffle train_dev_groups
+	#train_groups = train_dev_groups[:70] → 70 groups
+	#dev_groups = train_dev_groups[70:90] → 20 groups
+
 	train_groups = np.random.choice(train_groups, int(len(train_groups)*sample_ratio))
 	test_groups = np.random.choice(test_groups, int(len(test_groups)*sample_ratio))
 	dev_groups = np.random.choice(dev_groups, int(len(dev_groups)*sample_ratio))
+	#For each selected group, collects all sample indices from that group.
+	#Example: if train_groups = ["N1", "N5"] and all_group_map["N1"] = [0,1,2], all_group_map["N5"] = [10,11], then train_index = [0,1,2,10,11].
+
 	train_index = [i for g in train_groups for i in all_group_map[g]]
 	test_index = [i for g in test_groups for i in all_group_map[g]]
 	dev_index = [i for g in dev_groups for i in all_group_map[g]]
@@ -105,12 +117,15 @@ def train_test_split_grouped(samples, sample_ratio=0.1):
 	return train_index, dev_index, test_index
 
 def simple_balance_sampling(samples, train_index, balance_coef=2):
-	index_group_by_label = [[], []]
+	index_group_by_label = [[], []] # [normal_indices, anomalous_indices]
 	for i in train_index:
-		y = samples[i][1]
+		y = samples[i][1] #label of the sample
 		index_group_by_label[y].append(i)
-	num_positive = len(index_group_by_label[1])
+	num_positive = len(index_group_by_label[1]) #number of anomalous samples
+	#Keeps only the first num_positive * 2 normal samples.
+	#Example: if num_positive = 500, keeps 500 * 2 = 1000 normal samples.
 	index_group_by_label[0] = index_group_by_label[0][:int(num_positive*balance_coef)]
+	#combine and shuffle
 	collect_index = index_group_by_label[0] + index_group_by_label[1]
 	np.random.shuffle(collect_index)
 	return collect_index

@@ -12,7 +12,7 @@ class LogTemplateReprCache():
 		self.embed_layer = embed_layer
 		self.kd_tree = None
 
-	def feed(self, template_map):
+	def feed(self, template_map): #word ids of template
 		self.template_list = []
 		self.feature_list = []
 		for tmpl_id, word_list in template_map.items():

@@ -5,9 +5,9 @@ import torch
 from utils import *
 
 def init_experiment():
-	check_folder_exists(config.output_path)
-	check_folder_exists(config.torch_model_path)
-	check_folder_exists(config.data_package_path)
+	check_folder_exists(config.output_path) #for logs and general output
+	check_folder_exists(config.torch_model_path) #for model checkpoints
+	check_folder_exists(config.data_package_path) #for cached processed data and graphs
 	init_logger(os.path.join(config.output_path, config.log_file_name))
 	printf("Initializing...")
 	np.random.seed(config.random_seed)
@@ -57,9 +57,11 @@ def prepare_entity_dataset(log_name, tmpl_list=None, force_replace=False):
 def prepare_dataset(log_name, group_type):
 	if group_type is None or group_type=="None":
 		config.use_group_evaluation = False
-	word2vec = load_word_embedding_model(config.word2vec_model)
+	word2vec = load_word_embedding_model(config.word2vec_model) #load pretrained embeddings: dict: word: embedding
 	vocab = Vocab().feed(word2vec)
-	samples, tmpl_list, template_map = prepare_log_dataset(log_name, vocab, group_type, config.window_size)
+	#prepare log: samples[indices of logs length:32, label for those 32,node_id"user1"],template_map: with templ_key access the words of that template(masked_log), 
+	# tmpl_list[i] tells us log i to which template_key it belongs
+	samples, tmpl_list, template_map = prepare_log_dataset(log_name, vocab, group_type, config.window_size) 
 	log_entity_graph = prepare_entity_dataset(log_name, tmpl_list) if config.use_log_entity_graph==True else None
 	train_index, dev_index, test_index = train_test_split_grouped(samples)
 	train_index = simple_balance_sampling(samples, train_index)
