@@ -1,0 +1,33 @@
+Added log node: log_0
+Added log node: log_1
+Added log node: log_2
+Added log node: log_3
+Added log node: log_4
+Added entity node: entity_0 ()
+Added entity node: entity_1 (2005.06.03)
+Added entity node: entity_2 (R02-M1-N0-C:J12-U11)
+Added entity node: entity_3 (R23-M0-NE-C:J05-U01)
+Added entity node: entity_4 (double-hummer)
+Added edge: log_0 -- entity_0
+Added edge: log_0 -- entity_1
+Added edge: log_0 -- entity_2
+Added edge: log_1 -- entity_0
+Added edge: log_1 -- log_0
+Added edge: log_1 -- entity_1
+Added edge: log_1 -- log_0
+Added edge: log_1 -- entity_2
+Added edge: log_1 -- log_0
+Added edge: log_2 -- entity_0
+Added edge: log_2 -- log_1
+Added edge: log_2 -- entity_1
+Added edge: log_2 -- log_1
+Added edge: log_2 -- entity_2
+Added edge: log_2 -- log_1
+Added edge: log_3 -- entity_0
+Added edge: log_3 -- log_2
+Added edge: log_3 -- entity_1
+Added edge: log_3 -- log_2
+Added edge: log_3 -- entity_2
+Added edge: log_3 -- log_2
+Added edge: log_4 -- entity_3
+Added edge: log_4 -- entity_4

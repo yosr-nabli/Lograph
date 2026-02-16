@@ -58,7 +58,7 @@ def prepare_entity_dataset(log_name, tmpl_list=None, force_replace=False):
 		log_data = load_dataset(log_name)
 		printf("Loaded %d log messages." % (len(log_data)))
 		print("Building Log Entity Graph...")
-		log_entity_graph.build(log_data)
+		log_entity_graph.build(log_data, visualize_first_n=5)
 		log_entity_graph.save()
 	else:
 		log_entity_graph.load()
@@ -72,19 +72,9 @@ def prepare_dataset(log_name, group_type):
 
 	# Load pretrained embeddings
 	word2vec = load_word_embedding_model(config.word2vec_model)
-	with open("dataset_preparation_log.txt", "a") as log_file:
-		log_file.write("1.Loaded GloVe word embedding.\n")
 
 	# Create vocabulary
 	vocab = Vocab().feed(word2vec)
-	with open("dataset_preparation_log.txt", "a") as log_file:
-		log_file.write("2.Created vocabulary.\n")
-		log_file.write(f"First 3 entities in _id2label:Labels for classification: {vocab._id2label[:3]}\n")
-		log_file.write(f"First 3 entities in _label2id:Mapping from label to its ID: {list(vocab._label2id.items())[:3]}\n")
-		log_file.write(f"First 3 entities in _id2word:List of words in the vocabulary (indexable by ID): {vocab._id2word[:3]}\n")
-		log_file.write(f"First 3 entities in _word2id:Mapping from word to its ID: {list(vocab._word2id.items())[:3]}\n")
-		log_file.write(f"Embedding dimension:Dimensionality of word embeddings: {vocab._embed_dim}\n")
-		log_file.write(f"First 3 rows of embeddings:Matrix of word embeddings (rows correspond to words in _id2word): {vocab.embeddings[:3] if vocab.embeddings is not None else 'None'}\n")
 
 	#prepare log: samples[indices of logs length:32, label for those 32,node_id"user1"],template_map: with templ_key access the words of that template(masked_log), 
 	# tmpl_list[i] tells us log i to which template_key it belongs
@@ -120,7 +110,70 @@ def prepare_dataset_cpu(log_name, group_type):
 
 	#prepare log: samples[indices of logs length:32, label for those 32,node_id"user1"],template_map: with templ_key access the words of that template(masked_log), 
 	# tmpl_list[i] tells us log i to which template_key it belongs
-	samples, tmpl_list, template_map = prepare_log_dataset(log_name, vocab, group_type, config.window_size) 
+	samples, tmpl_list, template_map = prepare_log_dataset(log_name, vocab, group_type, config.window_size)
+	log_entity_graph = prepare_entity_dataset(log_name, tmpl_list) if config.use_log_entity_graph==True else None 
+	train_index, dev_index, test_index = train_test_split_grouped(samples, sample_ratio=1.0)
+	train_index = simple_balance_sampling(samples, train_index, balance_coef=4)
+	if len(train_index) == 0:
+		raise ValueError("No training samples after balancing! Check your data or balance_coef.")
+	if len(dev_index) == 0:
+		raise ValueError("No dev samples after splitting! Check your data or splitting logic.")
+	train_loader, dev_loader = convert_to_training_data_loader(samples, train_index, dev_index, tmpl_list, template_map)
+	test_loader = convert_to_testing_data_loader(samples, test_index, tmpl_list, template_map)
+	with open("dataset_preparation_log.txt", "a") as log_file:
+		log_file.write("5.Splitted samples into train/dev/test sets.\n")
+		log_file.write(f"First 3 indices in train_index: {train_index[:3]}\n")
+		log_file.write(f"First 3 indices in dev_index: {dev_index[:3]}\n")
+		log_file.write(f"First 3 indices in test_index: {test_index[:3]}\n")
+		log_file.write("6.balanced samples with anomalous logs 2* normal logs\n")
+		log_file.write("7.Converted into Dataloaders\n")
+		# Show an example batch from train_loader
+		train_iter = iter(train_loader)
+		try:
+			words, labels, groups, masks, indices = next(train_iter)
+			log_file.write("Example train_loader batch (first sample):\n")
+			word_ids = words[0].tolist() # shape: [seq_len, num_word]
+			word_strs = [[vocab._id2word[w] if w < len(vocab._id2word) else "OOV" for w in word_list if w != 0] for word_list in word_ids]
+			log_file.write(f"  Word IDs: {word_ids}\n")
+			log_file.write(f"  Words: {word_strs}\n")
+			log_file.write(f"  Label: {labels[0].item()}\n")
+			log_file.write(f"  Group: {groups[0].item()}\n")
+			log_file.write(f"  Indices: {indices[0].tolist()}\n")
+		except Exception as e:
+			log_file.write(f"  Could not fetch example train_loader batch: {e}\n")
+		# Show an example batch from test_loader
+		test_iter = iter(test_loader)
+		try:
+			words, labels, groups, masks, indices = next(test_iter)
+			log_file.write("Example test_loader batch (first sample):\n")
+			word_ids = words[0].tolist()
+			word_strs = [[vocab._id2word[w] if w < len(vocab._id2word) else "OOV" for w in word_list if w != 0] for word_list in word_ids]
+			log_file.write(f"  Word IDs: {word_ids}\n")
+			log_file.write(f"  Words: {word_strs}\n")
+			log_file.write(f"  Label: {labels[0].item()}\n")
+			log_file.write(f"  Group: {groups[0].item()}\n")
+			log_file.write(f"  Indices: {indices[0].tolist()}\n")
+		except Exception as e:
+			log_file.write(f"  Could not fetch example test_loader batch: {e}\n")
+	embed_layer = WordAggregateTfIdfLayer(vocab).feed(train_loader) if config.use_tf_idf_aggregation==True else WordAggregateLayer(vocab)
+	with open("dataset_preparation_log.txt", "a") as log_file:
+		log_file.write("Finished computing TF-IDF embeddings.\n")
+		if hasattr(embed_layer, 'idf_counter'):
+			idf_items = list(embed_layer.idf_counter.items())[:2]
+			for word_id, idf_value in idf_items:
+				word = vocab._id2word[word_id] if word_id < len(vocab._id2word) else "OOV"
+				log_file.write(f"Word_id : {word_id},Word: {word}, IDF: {idf_value}\n")
+			log_file.write(f"OOV IDF Value: {embed_layer.oov_idf_value}\n")
+	template_cache = LogTemplateReprCache(vocab, embed_layer).feed(template_map)
+	with open("dataset_preparation_log.txt", "a") as log_file:
+		log_file.write("Finished caching embedding vectors for templates.\n")
+		tmpl_keys = list(template_cache.tmpl_index_map.keys())[:2]
+		for tmpl_key in tmpl_keys:
+			word_ids = template_map[tmpl_key]
+			words = [vocab._id2word[w_id] for w_id in word_ids]
+			log_file.write(f"Template ID: {tmpl_key}, Words: {words}\n")
+			log_file.write(f"Embedding: {template_cache.get_template_repr(tmpl_key)}\n")
+        	
 def run_experiment(log_name, group_type, model_name="Lograph", alias=""):
 	train_loader, dev_loader, test_loader, vocab, embed_layer, template_cache, log_entity_graph = prepare_dataset(log_name, group_type)
 	alias += "_"+config.word2vec_model

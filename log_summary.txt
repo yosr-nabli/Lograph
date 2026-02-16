@@ -1,0 +1,76 @@
+================================================================================
+LOG SUMMARY
+================================================================================
+
+
+================================================================================
+LOG 0
+================================================================================
+Content: 1117838570 2005.06.03 R02-M1-N0-C:J12-U11 2005-06-03-15.42.50.675872 R02-M1-N0-C:J12-U11 RAS KERNEL INFO instruction cache parity error corrected
+Timestamp: 1117838570
+
+Connections (3 edges):
+  - Entity 0 ('[temporal_link]')
+  - Entity 1 ('2005.06.03')
+  - Entity 2 ('R02-M1-N0-C:J12-U11')
+
+================================================================================
+LOG 1
+================================================================================
+Content: 1117838573 2005.06.03 R02-M1-N0-C:J12-U11 2005-06-03-15.42.53.276129 R02-M1-N0-C:J12-U11 RAS KERNEL INFO instruction cache parity error corrected
+Timestamp: 1117838573
+
+Connections (3 edges):
+  - Entity 0 ('[temporal_link]')
+    -> Links to previous log 0
+       Previous log content: 1117838570 2005.06.03 R02-M1-N0-C:J12-U11 2005-06-03-15.42.50.675872 R02-M1-N0-C:J12-U11 RAS KERNEL ...
+  - Entity 1 ('2005.06.03')
+    -> Links to previous log 0
+       Previous log content: 1117838570 2005.06.03 R02-M1-N0-C:J12-U11 2005-06-03-15.42.50.675872 R02-M1-N0-C:J12-U11 RAS KERNEL ...
+  - Entity 2 ('R02-M1-N0-C:J12-U11')
+    -> Links to previous log 0
+       Previous log content: 1117838570 2005.06.03 R02-M1-N0-C:J12-U11 2005-06-03-15.42.50.675872 R02-M1-N0-C:J12-U11 RAS KERNEL ...
+
+================================================================================
+LOG 2
+================================================================================
+Content: 1117838976 2005.06.03 R02-M1-N0-C:J12-U11 2005-06-03-15.49.36.156884 R02-M1-N0-C:J12-U11 RAS KERNEL INFO instruction cache parity error corrected
+Timestamp: 1117838976
+
+Connections (3 edges):
+  - Entity 0 ('[temporal_link]')
+    -> Links to previous log 1
+       Previous log content: 1117838573 2005.06.03 R02-M1-N0-C:J12-U11 2005-06-03-15.42.53.276129 R02-M1-N0-C:J12-U11 RAS KERNEL ...
+  - Entity 1 ('2005.06.03')
+    -> Links to previous log 1
+       Previous log content: 1117838573 2005.06.03 R02-M1-N0-C:J12-U11 2005-06-03-15.42.53.276129 R02-M1-N0-C:J12-U11 RAS KERNEL ...
+  - Entity 2 ('R02-M1-N0-C:J12-U11')
+    -> Links to previous log 1
+       Previous log content: 1117838573 2005.06.03 R02-M1-N0-C:J12-U11 2005-06-03-15.42.53.276129 R02-M1-N0-C:J12-U11 RAS KERNEL ...
+
+================================================================================
+LOG 3
+================================================================================
+Content: 1117838978 2005.06.03 R02-M1-N0-C:J12-U11 2005-06-03-15.49.38.026704 R02-M1-N0-C:J12-U11 RAS KERNEL INFO instruction cache parity error corrected
+Timestamp: 1117838978
+
+Connections (3 edges):
+  - Entity 0 ('[temporal_link]')
+    -> Links to previous log 2
+       Previous log content: 1117838976 2005.06.03 R02-M1-N0-C:J12-U11 2005-06-03-15.49.36.156884 R02-M1-N0-C:J12-U11 RAS KERNEL ...
+  - Entity 1 ('2005.06.03')
+    -> Links to previous log 2
+       Previous log content: 1117838976 2005.06.03 R02-M1-N0-C:J12-U11 2005-06-03-15.49.36.156884 R02-M1-N0-C:J12-U11 RAS KERNEL ...
+  - Entity 2 ('R02-M1-N0-C:J12-U11')
+    -> Links to previous log 2
+       Previous log content: 1117838976 2005.06.03 R02-M1-N0-C:J12-U11 2005-06-03-15.49.36.156884 R02-M1-N0-C:J12-U11 RAS KERNEL ...
+
+================================================================================
+LOG 4
+================================================================================
+Content: 1117842440 2005.06.03 R23-M0-NE-C:J05-U01 2005-06-03-16.47.20.730545 R23-M0-NE-C:J05-U01 RAS KERNEL INFO 63543 double-hummer alignment exceptions
+Timestamp: 1117842440
+
+Connections (2 edges):
+  - Entity 3 ('R23-M0-NE-C:J05-U01')
+  - Entity 4 ('double-hummer')

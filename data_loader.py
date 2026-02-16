@@ -1,6 +1,6 @@
 import torch
 import config
-import torch as np
+import numpy as np
 from torch.utils.data import Dataset, DataLoader
 
 class LographDataset(Dataset):

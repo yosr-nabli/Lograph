@@ -1,0 +1,14 @@
+Added log node: log_0
+Added log node: log_1
+Added entity node: entity_0 ()
+Added entity node: entity_1 (2005.06.03)
+Added entity node: entity_2 (R02-M1-N0-C:J12-U11)
+Added edge: log_0 -- entity_0
+Added edge: log_0 -- entity_1
+Added edge: log_0 -- entity_2
+Added edge: log_1 -- entity_0
+Added edge: log_1 -- log_0
+Added edge: log_1 -- entity_1
+Added edge: log_1 -- log_0
+Added edge: log_1 -- entity_2
+Added edge: log_1 -- log_0
