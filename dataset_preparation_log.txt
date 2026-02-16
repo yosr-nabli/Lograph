@@ -1,0 +1,16 @@
+1.Loaded GloVe word embedding.
+2.Created vocabulary.
+entities in _id2label:Labels for classification: ['Normal', 'Anomalous']
+entities in _label2id:Mapping from label to its ID: [(0, 'Normal'), (1, 'Anomalous')]
+First 8 entities in _id2word:List of words in the vocabulary (indexable by ID): ['<pad>', '<bos>', '<eos>', '<oov>', 'the', ',', '.', 'of']
+First 8 entities in _word2id:Mapping from word to its ID: [('<pad>', 0), ('<bos>', 1), ('<eos>', 2), ('<oov>', 3), ('the', 4), (',', 5), ('.', 6), ('of', 7)]
+Embedding dimension:Dimensionality of word embeddings: 300
+3. Loaded BGL dataset with each row corresponding to [log, label, timestamp, entities].
+First 3 rows of the dataset: [['1117838570 2005.06.03 R02-M1-N0-C:J12-U11 2005-06-03-15.42.50.675872 R02-M1-N0-C:J12-U11 RAS KERNEL INFO instruction cache parity error corrected', 0, 1117838570, {'node_id': ['R02-M1-N0-C:J12-U11']}], ['1117838573 2005.06.03 R02-M1-N0-C:J12-U11 2005-06-03-15.42.53.276129 R02-M1-N0-C:J12-U11 RAS KERNEL INFO instruction cache parity error corrected', 0, 1117838573, {'node_id': ['R02-M1-N0-C:J12-U11']}], ['1117838976 2005.06.03 R02-M1-N0-C:J12-U11 2005-06-03-15.49.36.156884 R02-M1-N0-C:J12-U11 RAS KERNEL INFO instruction cache parity error corrected', 0, 1117838976, {'node_id': ['R02-M1-N0-C:J12-U11']}]]
+4.Converted log data into samples.
+First 2 samples: [[[0, 1, 2, 3], 0, 'R02-M1-N0-C:J12-U11'], [[4], 0, 'R23-M0-NE-C:J05-U01']]
+3.Performed log tokenization.
+First 2 tmpl_list entries:tmpl_list[i] tells you which template key log i belongs to.: [3501970963, 3501970963]
+First 2 template_map entries:gives you the sequence of word IDs that defines that template:
+Template Key: 3501970963, Word IDs: [970, 992, 865, 703, 855, 902, 543, 812]
+Template Key: 1317105019, Word IDs: [897, 897, 970, 992, 865, 299, 1042, 863, 764]

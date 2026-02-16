@@ -21,11 +21,17 @@ def load_word_embedding_model(model_name="bert"):
 class Vocab():
 	PAD, START, END, UNK = 0, 1, 2, 3
 	def __init__(self):
-		self._id2label = ["Normal","Anomalous"]
-		self._label2id = {k:v for k,v in enumerate(self._id2label)}
+		# Labels for classification (e.g., Normal and Anomalous logs)
+		self._id2label = ["Normal", "Anomalous"]
+		# Mapping from label to its ID
+		self._label2id = {k: v for k, v in enumerate(self._id2label)}
+		# List of words in the vocabulary (indexable by ID)
 		self._id2word = []
+		# Mapping from word to its ID
 		self._word2id = {}
+		# Dimensionality of word embeddings
 		self._embed_dim = -1
+		# Matrix of word embeddings (rows correspond to words in _id2word)
 		self.embeddings = None
 
 	def feed(self, word2vec, force_replace=False):

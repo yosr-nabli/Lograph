@@ -28,11 +28,23 @@ def prepare_log_dataset(log_name, vocab, group_type=None, window_size=20, force_
 	local_data_file = os.path.join(config.data_package_path, "%s_%s_%d.obj"%(log_name, group_type, window_size))
 	if os.path.exists(local_data_file)==False or force_replace==True:
 		log_data = load_dataset(log_name)
+		with open("dataset_preparation_log.txt", "a") as log_file:
+			log_file.write(f"3. Loaded {log_name.upper()} dataset with each row corresponding to [log, label, timestamp, entities].\n")
+			log_file.write(f"First 3 rows of the dataset: {log_data[:3]}\n")
 		printf("Loaded %d log messages." % (len(log_data)))
 		samples = convert_into_samples(log_data, group_type, window_size, log_name=log_name, 
 										max_time_interval=int(config.max_time_interval*HOUR))
+		with open("dataset_preparation_log.txt", "a") as log_file:
+			log_file.write("4.Converted log data into samples.\n")
+			log_file.write(f"First 2 samples: {samples[:2]}\n")
 		printf("Got %d log samples." % (len(samples)))
 		tmpl_list, template_map = log_tokenization(log_data, vocab)
+		with open("dataset_preparation_log.txt", "a") as log_file:
+			log_file.write("3.Performed log tokenization.\n")
+			log_file.write(f"First 2 tmpl_list entries:tmpl_list[i] tells you which template key log i belongs to.: {tmpl_list[:2]}\n")
+			log_file.write("First 2 template_map entries:gives you the sequence of word IDs that defines that template:\n")
+			for tmpl_key, word_ids in list(template_map.items())[:2]:
+				log_file.write(f"Template Key: {tmpl_key}, Word IDs: {word_ids}\n")
 		save_object([samples, tmpl_list, template_map], local_data_file)
 	else:
 		samples, tmpl_list, template_map = load_object(local_data_file)
@@ -57,8 +69,23 @@ def prepare_entity_dataset(log_name, tmpl_list=None, force_replace=False):
 def prepare_dataset(log_name, group_type):
 	if group_type is None or group_type=="None":
 		config.use_group_evaluation = False
-	word2vec = load_word_embedding_model(config.word2vec_model) #load pretrained embeddings: dict: word: embedding
+
+	# Load pretrained embeddings
+	word2vec = load_word_embedding_model(config.word2vec_model)
+	with open("dataset_preparation_log.txt", "a") as log_file:
+		log_file.write("1.Loaded GloVe word embedding.\n")
+
+	# Create vocabulary
 	vocab = Vocab().feed(word2vec)
+	with open("dataset_preparation_log.txt", "a") as log_file:
+		log_file.write("2.Created vocabulary.\n")
+		log_file.write(f"First 3 entities in _id2label:Labels for classification: {vocab._id2label[:3]}\n")
+		log_file.write(f"First 3 entities in _label2id:Mapping from label to its ID: {list(vocab._label2id.items())[:3]}\n")
+		log_file.write(f"First 3 entities in _id2word:List of words in the vocabulary (indexable by ID): {vocab._id2word[:3]}\n")
+		log_file.write(f"First 3 entities in _word2id:Mapping from word to its ID: {list(vocab._word2id.items())[:3]}\n")
+		log_file.write(f"Embedding dimension:Dimensionality of word embeddings: {vocab._embed_dim}\n")
+		log_file.write(f"First 3 rows of embeddings:Matrix of word embeddings (rows correspond to words in _id2word): {vocab.embeddings[:3] if vocab.embeddings is not None else 'None'}\n")
+
 	#prepare log: samples[indices of logs length:32, label for those 32,node_id"user1"],template_map: with templ_key access the words of that template(masked_log), 
 	# tmpl_list[i] tells us log i to which template_key it belongs
 	samples, tmpl_list, template_map = prepare_log_dataset(log_name, vocab, group_type, config.window_size) 
@@ -71,6 +98,29 @@ def prepare_dataset(log_name, group_type):
 	template_cache = LogTemplateReprCache(vocab, embed_layer).feed(template_map)
 	return train_loader, dev_loader, test_loader, vocab, embed_layer, template_cache, log_entity_graph
 
+def prepare_dataset_cpu(log_name, group_type):
+	if group_type is None or group_type=="None":
+		config.use_group_evaluation = False
+
+	# Load pretrained embeddings
+	word2vec = load_word_embedding_model(config.word2vec_model)
+	with open("dataset_preparation_log.txt", "a") as log_file:
+		log_file.write("1.Loaded GloVe word embedding.\n")
+
+	# Create vocabulary
+	vocab = Vocab().feed(word2vec)
+	with open("dataset_preparation_log.txt", "a") as log_file:
+		log_file.write("2.Created vocabulary.\n")
+		log_file.write(f"entities in _id2label:Labels for classification: {vocab._id2label[:3]}\n")
+		log_file.write(f"entities in _label2id:Mapping from label to its ID: {list(vocab._label2id.items())[:3]}\n")
+		log_file.write(f"First 8 entities in _id2word:List of words in the vocabulary (indexable by ID): {vocab._id2word[:8]}\n")
+		log_file.write(f"First 8 entities in _word2id:Mapping from word to its ID: {list(vocab._word2id.items())[:8]}\n")
+		log_file.write(f"Embedding dimension:Dimensionality of word embeddings: {vocab._embed_dim}\n")
+
+
+	#prepare log: samples[indices of logs length:32, label for those 32,node_id"user1"],template_map: with templ_key access the words of that template(masked_log), 
+	# tmpl_list[i] tells us log i to which template_key it belongs
+	samples, tmpl_list, template_map = prepare_log_dataset(log_name, vocab, group_type, config.window_size) 
 def run_experiment(log_name, group_type, model_name="Lograph", alias=""):
 	train_loader, dev_loader, test_loader, vocab, embed_layer, template_cache, log_entity_graph = prepare_dataset(log_name, group_type)
 	alias += "_"+config.word2vec_model
@@ -88,4 +138,7 @@ def run_experiment(log_name, group_type, model_name="Lograph", alias=""):
 	return result
 
 if __name__=="__main__":
-	run_experiment("bgl", "node_id")
+	#run_experiment("bgl", "node_id")
+	# Run only the prepare_log_dataset function to generate the file
+    prepare_dataset_cpu("bgl", "node_id")
+    print("prepare_log_dataset completed. File generated.")

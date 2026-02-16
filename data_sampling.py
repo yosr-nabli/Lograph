@@ -11,7 +11,7 @@ def convert_into_samples(log_data, entity=None, window_size=config.window_size,
 	samples = []
 	temp_info = {}
 	group_names = ['']
-	min_window_length = 2
+	min_window_length = 1
 	sample_proba = 0.2
 	collected_groups = set()
 	def add_sequence_sample(group_id, tmp_id=None, use_sub_smpl=False):

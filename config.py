@@ -3,6 +3,7 @@ torch_model_path = "./model/"
 data_package_path = "./data/"
 word_embed_path = "./data/"
 raw_dataset_path = "../LogHub/"
+cpu_data_path = "./data/CpuData/"
 output_path = "./output/"
 log_file_name = "lograph.log"
 device = None

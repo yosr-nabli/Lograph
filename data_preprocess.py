@@ -5,7 +5,7 @@ from utils import *
 from tqdm import tqdm
 
 def load_bgl_dataset(log_name="bgl"):
-	data_filename = os.path.join(config.raw_dataset_path, "BGL.log")
+	data_filename = os.path.join(config.cpu_data_path, "BGL.log")
 	log_data = []
 	with open(data_filename, 'r', encoding="utf-8") as f:
 		for line in f.readlines():
