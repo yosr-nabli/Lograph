@@ -114,10 +114,6 @@ def prepare_dataset_cpu(log_name, group_type):
 	log_entity_graph = prepare_entity_dataset(log_name, tmpl_list) if config.use_log_entity_graph==True else None 
 	train_index, dev_index, test_index = train_test_split_grouped(samples, sample_ratio=1.0)
 	train_index = simple_balance_sampling(samples, train_index, balance_coef=4)
-	if len(train_index) == 0:
-		raise ValueError("No training samples after balancing! Check your data or balance_coef.")
-	if len(dev_index) == 0:
-		raise ValueError("No dev samples after splitting! Check your data or splitting logic.")
 	train_loader, dev_loader = convert_to_training_data_loader(samples, train_index, dev_index, tmpl_list, template_map)
 	test_loader = convert_to_testing_data_loader(samples, test_index, tmpl_list, template_map)
 	with open("dataset_preparation_log.txt", "a") as log_file:
