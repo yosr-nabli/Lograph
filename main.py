@@ -169,6 +169,22 @@ def prepare_dataset_cpu(log_name, group_type):
 			words = [vocab._id2word[w_id] for w_id in word_ids]
 			log_file.write(f"Template ID: {tmpl_key}, Words: {words}\n")
 			log_file.write(f"Embedding: {template_cache.get_template_repr(tmpl_key)}\n")
+
+def run_experiment(log_name, group_type, model_name="Lograph", alias=""):
+	train_loader, dev_loader, test_loader, vocab, embed_layer, template_cache, log_entity_graph = prepare_dataset_cpu(log_name, group_type)
+	alias += "_"+config.word2vec_model
+	if model_name=="Lograph":
+		model = Lograph(log_entity_graph, embed_layer, template_cache, 
+						hidden_size=config.hidden_size, atten_size=config.atten_size,
+						use_meta_path=config.use_meta_path, alias=alias)
+	else:
+		raise NotImplementedError(model_name)
+	train(model, train_loader, dev_loader)
+	model.reload()
+	printf("Testing model...")
+	result = test(model, test_loader, alias="on Test")
+	print(result)
+	return result
         	
 def run_experiment(log_name, group_type, model_name="Lograph", alias=""):
 	train_loader, dev_loader, test_loader, vocab, embed_layer, template_cache, log_entity_graph = prepare_dataset(log_name, group_type)
@@ -185,6 +201,7 @@ def run_experiment(log_name, group_type, model_name="Lograph", alias=""):
 	result = test(model, test_loader, alias="on Test")
 	print(result)
 	return result
+
 
 if __name__=="__main__":
 	#run_experiment("bgl", "node_id")
