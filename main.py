@@ -3,6 +3,7 @@ import os
 import numpy as np
 import torch
 from utils import *
+from representation import visualize_lograph_architecture
 
 def init_experiment():
 	check_folder_exists(config.output_path) #for logs and general output
@@ -208,3 +209,4 @@ if __name__=="__main__":
 	# Run only the prepare_log_dataset function to generate the file
     prepare_dataset_cpu("bgl", "node_id")
     print("prepare_log_dataset completed. File generated.")
+	#visualize_lograph_architecture()

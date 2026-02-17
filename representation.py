@@ -117,6 +117,8 @@ def visualize_lograph_architecture(save_path="lograph_architecture.png"):
     # FIX: Arrow from bottom of "Log Representations" (x=1.5) to top of left meta-path box
     draw_arrow(1.5, small_box_bottoms[1.5] - 0.05, 2, y_meta + 1.3)
     # Arrow goes from (1.5, 18.0) to (2, 17.3)
+    # NEW Arrow 2: From Log Adjacency (x=3) to LogEntityLogLayer (x=2)
+    draw_arrow(3, small_box_bottoms[3] - 0.05, 2, y_meta + 1.3)
     
     # Draw left meta-path box at x=2, y=16.0, width=3.2, height=2.5
     bottom_lel, top_lel = draw_box(2, y_meta, 3.2, 2.5, 
@@ -130,6 +132,9 @@ def visualize_lograph_architecture(save_path="lograph_architecture.png"):
     draw_arrow(2, bottom_lel - 0.05, 2, y_lel_out + 0.55)
     bottom_lel_out, top_lel_out = draw_box(2, y_lel_out, 2.5, 1, 
                                             'att_log_reprs', colors['attention'], 10)
+    
+    # NEW Arrow 1: From Entity Representations (x=7) to EntityLogEntityLayer (x=8)
+    draw_arrow(7, small_box_bottoms[7] - 0.05, 8, y_meta + 1.3)
     
     # RIGHT BRANCH: EntityLogEntityLayer
     # FIX: Arrow from bottom of "Entity Adjacency" (x=8.5) to top of right meta-path box
